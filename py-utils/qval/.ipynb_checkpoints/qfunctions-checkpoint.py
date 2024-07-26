@@ -162,9 +162,8 @@ def quantize(x: float, n: int = 4) -> str:
     return result
 
 
-def dequantize(q: str, n: int = None) -> float:
-    if n is None:
-        n = len(q)
+def dequantize(q: str) -> float:
+    n = len(q)
 
     if n < 1:
         raise ValueError('The number of bits must be an integer greater than zero.')
@@ -173,7 +172,7 @@ def dequantize(q: str, n: int = None) -> float:
         
     sign = -1.0 if q[0] == '1' else 1.0
 
-    val = float(int(q[1:], 2)) / float(qMax_i(n)) #when qAdd adds a bit it increases qMax_i which fucks everything up
+    val = float(int(q[1:], 2)) / float(qMax_i(n))
 
     return sign * val
 
@@ -210,13 +209,7 @@ def qAdd(a : str, b : str) -> str:
     if len(a) < 1:
         raise ValueError('The number of bits must be an integer greater than zero.')
     
-    maxInt = qMax_i(len(a) + 1)
-    sum = qToInt(a) + qToInt(b)
-    if(sum > maxInt):
-        sum = maxInt
-    
-    
-    return qFromInt(sum, len(a) + 1)
+    return qFromInt(qToInt(a) + qToInt(b), len(a))
 
 
 def qSub(a : str, b : str) -> str:
