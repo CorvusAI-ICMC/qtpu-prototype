@@ -18,7 +18,7 @@
   <lib desc="#BFH-Praktika" name="9"/>
   <lib desc="#Input/Output-Extra" name="10"/>
   <lib desc="#Soc" name="11"/>
-  <lib desc="file#../atom/atom_math.circ" name="12"/>
+  <lib desc="file#../atom/atom_sum.circ" name="12"/>
   <main name="sign2two4"/>
   <options>
     <a name="gateUndefined" val="ignore"/>
