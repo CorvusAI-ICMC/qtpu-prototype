@@ -2,6 +2,7 @@ import math
 from typing import Callable
 
 
+
 class qval(str):
     def __new__(cls, value, n):
         # Ensure that the value contains only '0' and '1'
@@ -161,9 +162,8 @@ def quantize(x: float, n: int = 4) -> str:
     return result
 
 
-def dequantize(q: str, n: int = None) -> float:
-    if n is None:
-        n = len(q)
+def dequantize(q: str) -> float:
+    n = len(q)
 
     if n < 1:
         raise ValueError('The number of bits must be an integer greater than zero.')
@@ -172,11 +172,11 @@ def dequantize(q: str, n: int = None) -> float:
         
     sign = -1.0 if q[0] == '1' else 1.0
 
-    val = float(int(q[1:], 2)) / float(qMax_i(n)) #when qAdd adds a bit it increases qMax_i which fucks everything up
+    val = float(int(q[1:], 2)) / float(qMax_i(n))
 
     return sign * val
 
- 
+
 def qToInt(q : str) -> int:
     if len(q) < 1:
         raise ValueError('The number of bits must be an integer greater than zero.')
@@ -201,19 +201,15 @@ def qFromInt(x : int, n : int) -> str:
     result = sign_bit + bin(abs_val)[2:].zfill(n - 1)
 
     return result if len(result) <= n else qMax(n)
+         
 
-
-def qAdd(a: str, b: str) -> str:
-    if len(a) != len(b):
+def qAdd(a : str, b : str) -> str:
+    if len(a) != len(b): 
         raise ValueError('Both quantized values must have the same number of bits.')
     if len(a) < 1:
         raise ValueError('The number of bits must be an integer greater than zero.')
-
-    # maxInt = qMax_i(len(a))  # Max int for the given number of bits
-    qsum = qToInt(a) + qToInt(b)
-    # qsum = max(-maxInt, min(qsum, maxInt))
-
-    return qFromInt(qsum, len(a))  # Ensure the result fits into the original bit length
+    
+    return qFromInt(qToInt(a) + qToInt(b), len(a))
 
 
 def qSub(a : str, b : str) -> str:
@@ -236,14 +232,9 @@ def qMul(a : str, b : str) -> str:
         raise ValueError('Both quantized values must have the same number of bits.')
     if len(a) < 1:
         raise ValueError('The number of bits must be an integer greater than zero.')
-
-    # maxInt = qMax_i(len(a))
-    # mul = qToInt(a) * qToInt(b)
-    # mul = max(-maxInt, min(mul, maxInt))
-    # 
-    # return qFromInt(mul, 1 + (len(a) - 1) * 2)
+    
     val = qToInt(a) * qToInt(b)
-    return qfit(qFromInt(val, 1 + (len(a) - 1) * 2), len(a))
+    return qFromInt(val, 1 + (len(a) - 1) * 2)
 
 def qFun(f : Callable[[float], float]) -> str:
     return lambda q: quantize(f(dequantize(q)), len(q))
