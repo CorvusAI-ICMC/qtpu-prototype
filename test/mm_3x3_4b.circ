@@ -80,6 +80,9 @@
       <a name="appearance" val="NewPins"/>
       <a name="label" val="clk"/>
     </comp>
+    <comp lib="0" loc="(310,930)" name="Pin">
+      <a name="appearance" val="NewPins"/>
+    </comp>
     <comp lib="0" loc="(460,190)" name="Pin">
       <a name="appearance" val="NewPins"/>
       <a name="facing" val="south"/>
