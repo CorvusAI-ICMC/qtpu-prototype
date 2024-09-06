@@ -1,13 +1,13 @@
 import math
 from typing import Callable
+from .qval import qval
 
-
-class qval(str):
-    def __new__(cls, value, n):
-        # Ensure that the value contains only '0' and '1'
-        if not all(char in '01' for char in value):
-            raise ValueError("BinaryString can only contain '0' and '1'")
-        return str.__new__(cls, value)
+# class qval(str):
+#     def __new__(cls, value, n):
+#         # Ensure that the value contains only '0' and '1'
+#         if not all(char in '01' for char in value):
+#             raise ValueError("BinaryString can only contain '0' and '1'")
+#         return str.__new__(cls, value)
 
 def qNaN(n : int) -> str:
     """
@@ -104,7 +104,7 @@ def qPlanck(n : int) -> float:
     return qStep(n) / 2.0
 
 
-def quantize(x: float, n: int = 4) -> str:
+def quantize(x: float, n: int = 4, scale: float = 1.0) -> qval:
     """
     Quantizes a given floating-point number `x` into a binary string representation
     with `n` bits using our method.
@@ -135,7 +135,7 @@ def quantize(x: float, n: int = 4) -> str:
         >>> quantize_s(-0.75, 4)
         '1010'
     """
-
+    x /= scale
 
     # Especial cases
     if math.isnan(x): return qNaN(n)
@@ -158,10 +158,10 @@ def quantize(x: float, n: int = 4) -> str:
     
     # Adding the sign bit and converting to binary
     result = sign_bit + bin(q_val)[2:].zfill(n - 1)
-    return result
+    return qval(result, n)
 
 
-def dequantize(q: str, n: int = None) -> float:
+def dequantize(q: qval, n: int = None) -> float:
     if n is None:
         n = len(q)
 
@@ -174,7 +174,7 @@ def dequantize(q: str, n: int = None) -> float:
 
     val = float(int(q[1:], 2)) / float(qMax_i(n)) #when qAdd adds a bit it increases qMax_i which fucks everything up
 
-    return sign * val
+    return sign * val * q.scale
 
  
 def qToInt(q : str) -> int:
@@ -185,14 +185,14 @@ def qToInt(q : str) -> int:
     return -val if q[0] == '1' else val
 
 
-def qfit(q: str, n : int) -> str:
+def qfit(q: str, n : int) -> qval:
     if n < 1: 
         raise ValueError('The number of bits must be an integer greater than zero.')
     
-    return q[:n] if len(q) > n else q.ljust(n, '0')
+    return qval(q, n) if len(q) > n else qval(q.ljust(n, '0'), n)
 
 
-def qFromInt(x : int, n : int) -> str:
+def qFromInt(x : int, n : int) -> qval:
     if n < 1:
         raise ValueError('The number of bits must be an integer greater than zero.')
     
@@ -200,13 +200,19 @@ def qFromInt(x : int, n : int) -> str:
     sign_bit = '1' if x < 0 else '0'
     result = sign_bit + bin(abs_val)[2:].zfill(n - 1)
 
-    return result if len(result) <= n else qMax(n)
+    return qval(result, n) if len(result) <= n else qval(qMax(n), n)
 
 
-def qAdd(a: str, b: str) -> str:
+def qAdd(a: qval, b: qval) -> qval:
     if len(a) != len(b):
-        raise ValueError('Both quantized values must have the same number of bits.')
-    if len(a) < 1:
+        # Naive solution
+        new_len = max(len(a), len(b))
+        a = dequantize(a, len(a))
+        b = dequantize(b, len(b))
+        a = quantize(a, new_len)
+        b = quantize(b, new_len)
+
+    if len(a) < 1 or len(b) < 1:
         raise ValueError('The number of bits must be an integer greater than zero.')
 
     # maxInt = qMax_i(len(a))  # Max int for the given number of bits
@@ -218,7 +224,12 @@ def qAdd(a: str, b: str) -> str:
 
 def qSub(a : str, b : str) -> str:
     if len(a) != len(b): 
-        raise ValueError('Both quantized values must have the same number of bits.')
+        # Naive solution
+        new_len = max(len(a), len(b))
+        a = dequantize(a, len(a))
+        b = dequantize(b, len(b))
+        a = quantize(a, new_len)
+        b = quantize(b, new_len)
     if len(a) < 1:
         raise ValueError('The number of bits must be an integer greater than zero.')
     
@@ -231,9 +242,14 @@ def qInv(q : str) -> str:
     return ('1' if '0' == q[0] else '0') + q[1:]
 
 
-def qMul(a : str, b : str) -> str:
+def qMul(a : qval, b : qval) -> qval:
     if len(a) != len(b): 
-        raise ValueError('Both quantized values must have the same number of bits.')
+        # Naive solution
+        new_len = max(len(a), len(b))
+        a = dequantize(a, len(a))
+        b = dequantize(b, len(b))
+        a = quantize(a, new_len)
+        b = quantize(b, new_len)
     if len(a) < 1:
         raise ValueError('The number of bits must be an integer greater than zero.')
 
