@@ -9,7 +9,7 @@ from .qval import qval
 #             raise ValueError("BinaryString can only contain '0' and '1'")
 #         return str.__new__(cls, value)
 
-def qNaN(n : int) -> str:
+def qNaN(n : int) -> qval:
     """
     Returns the Not a Number (NaN) or error (E) representation for a given number of bits.
 
@@ -20,9 +20,9 @@ def qNaN(n : int) -> str:
         str: The qNaN representation.
 
     """
-    return '1' + '0' * (n - 1)
+    return qval('1' + '0' * (n - 1), n)
 
-def qZERO(n : int) -> str:
+def qZERO(n : int) -> qval:
     """
     Returns the zero representation for a given number of bits.
 
@@ -33,9 +33,9 @@ def qZERO(n : int) -> str:
         str: The qZERO representation.
 
     """
-    return '0' * n
+    return qval('0' * n, n)
 
-def qMin(n : int) -> str:
+def qMin(n : int) -> qval:
     """
     Returns the minimum quantized value representation for a given number of bits.
 
@@ -46,9 +46,9 @@ def qMin(n : int) -> str:
         str: The qMin representation.
 
     """
-    return '1' + '1' * (n - 1)
+    return qval('1' + '1' * (n - 1), n)
 
-def qMax(n : int) -> str:
+def qMax(n : int) -> qval:
     """
     Returns the maximum quantized value representation for a given number of bits.
 
@@ -56,10 +56,10 @@ def qMax(n : int) -> str:
         n (int): The number of bits for the qMax representation.
 
     Returns:
-        str: The qMax representation.
+        qval: The qMax representation.
 
     """
-    return '0' + '1' * (n - 1)
+    return qval('0' + '1' * (n - 1), n)
 
 def qMax_i(n : int) -> int:
     """
@@ -158,38 +158,42 @@ def quantize(x: float, n: int = 4, scale: float = 1.0) -> qval:
     
     # Adding the sign bit and converting to binary
     result = sign_bit + bin(q_val)[2:].zfill(n - 1)
-    return qval(result, n)
+    return qval(result, n, scale)
 
 
 def dequantize(q: qval, n: int = None) -> float:
+    scale = q.scale
+
     if n is None:
         n = len(q)
 
     if n < 1:
         raise ValueError('The number of bits must be an integer greater than zero.')
 
-    if q == qNaN(n): return float('nan')
+    # print("why 1")
+    # if q == qNaN(n): return float('nan')
+    # print("why 2", q.scale)
         
     sign = -1.0 if q[0] == '1' else 1.0
 
     val = float(int(q[1:], 2)) / float(qMax_i(n)) #when qAdd adds a bit it increases qMax_i which fucks everything up
 
-    return sign * val * q.scale
+    return sign * val * scale
 
  
-def qToInt(q : str) -> int:
+def qToInt(q : qval) -> int:
     if len(q) < 1:
         raise ValueError('The number of bits must be an integer greater than zero.')
     
-    val = int(q[1:], 2)
+    val = int(int(q[1:], 2) * q.scale)
     return -val if q[0] == '1' else val
 
 
-def qfit(q: str, n : int) -> qval:
+def qfit(q: qval, n : int) -> qval:
     if n < 1: 
         raise ValueError('The number of bits must be an integer greater than zero.')
     
-    return qval(q, n) if len(q) > n else qval(q.ljust(n, '0'), n)
+    return qval(q, n, q.scale) if len(q) > n else qval(q.ljust(n, '0'), n, q.scale)
 
 
 def qFromInt(x : int, n : int) -> qval:
@@ -197,10 +201,16 @@ def qFromInt(x : int, n : int) -> qval:
         raise ValueError('The number of bits must be an integer greater than zero.')
     
     abs_val = abs(x)
+
+    scale = 1.0
+    # if abs_val > 1.0:
+    #     scale = abs_val
+    #     abs_val /= scale
+
     sign_bit = '1' if x < 0 else '0'
     result = sign_bit + bin(abs_val)[2:].zfill(n - 1)
 
-    return qval(result, n) if len(result) <= n else qval(qMax(n), n)
+    return qval(result, n, scale) if len(result) <= n else qval(qMax(n), n, scale)
 
 
 def qAdd(a: qval, b: qval) -> qval:
@@ -222,7 +232,7 @@ def qAdd(a: qval, b: qval) -> qval:
     return qFromInt(qsum, len(a))  # Ensure the result fits into the original bit length
 
 
-def qSub(a : str, b : str) -> str:
+def qSub(a : qval, b : qval) -> qval:
     if len(a) != len(b): 
         # Naive solution
         new_len = max(len(a), len(b))
@@ -261,7 +271,7 @@ def qMul(a : qval, b : qval) -> qval:
     val = qToInt(a) * qToInt(b)
     return qfit(qFromInt(val, 1 + (len(a) - 1) * 2), len(a))
 
-def qFun(f : Callable[[float], float]) -> str:
+def qFun(f : Callable[[float], float]) -> qval:
     return lambda q: quantize(f(dequantize(q)), len(q))
 
 
