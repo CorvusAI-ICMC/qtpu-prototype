@@ -41,15 +41,15 @@ class NN(nn.Module):
         self.lay3 = nn.Linear(4, 1)
     
     def forward(self, input):
-        out = func.tanh(self.lay1(input))
-        out = func.tanh(self.lay2(out))
+        out = func.relu(self.lay1(input))
+        out = func.relu(self.lay2(out))
         out = func.sigmoid(self.lay3(out))
         return out
     
 model = NN()
 
 optimizer = optim.Adam(model.parameters(), lr=0.001)
-criterion = nn.BCELoss()
+criterion = nn.MSELoss()
 
 numEpochs = 200
 
@@ -71,7 +71,7 @@ for epoch in range(numEpochs):
     with torch.no_grad():
         for batchInput, batchOutput in valLoader:
             output = model.forward(batchInput).squeeze()
-            predictions = torch.round(torch.sigmoid(output))
+            predictions = torch.round(output)
             correct += (predictions == batchOutput).sum().item()
             total += batchOutput.size(0)
             loss = criterion(output, batchOutput)
