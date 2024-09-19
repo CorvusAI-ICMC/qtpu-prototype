@@ -6,13 +6,19 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as func
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/simulador-Petroncini
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'py_utils')))
 from qval.qactivations import qRelu, qSigmoid
-from qval.qlayer import \
-    qdense  # Ensure this path is correct for your project structure
+from qval.qlayer import qdense
 from qval.qval import qval
 
+<<<<<<< HEAD
+=======
 
+>>>>>>> origin/simulador-Petroncini
 class NN(nn.Module):
     def __init__(self):
         super(NN, self).__init__()
@@ -26,6 +32,10 @@ class NN(nn.Module):
         out = func.sigmoid(self.lay3(out))
         return out
 
+<<<<< HEAD
+=======
+
+>>>>>>> origin/simulador-Petroncini
 loaded_model = NN()
 loaded_model.load_state_dict(torch.load('xor_model.pth', weights_only=True))
 
@@ -38,6 +48,10 @@ with torch.no_grad():
 print("XOR inputs:", test_inputs)
 print("Model outputs:", outputs)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/simulador-Petroncini
 def convert_to_qdense_params(layer):
     input_weights = layer.weight.detach().numpy().tolist()
     print("input weights: ")
@@ -45,6 +59,10 @@ def convert_to_qdense_params(layer):
     output_bias = layer.bias.detach().numpy().tolist()
     return input_weights, output_bias
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/simulador-Petroncini
 input_weights, output_bias = convert_to_qdense_params(loaded_model.lay1)
 qdense1 = qdense(input_weights, output_bias, input_bits=4, output_bits=4)
 
@@ -54,6 +72,10 @@ qdense2 = qdense(input_weights, output_bias, input_bits=4, output_bits=4)
 input_weights, output_bias = convert_to_qdense_params(loaded_model.lay3)
 qdense3 = qdense(input_weights, output_bias, input_bits=4, output_bits=4)
 
+<<<<<<< HEAD
+=======
+
+>>>>>>> origin/simulador-Petroncini
 def dense_process(input):
     print("LEN INPUT")
     input = input.numpy().tolist()
