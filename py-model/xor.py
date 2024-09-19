@@ -43,7 +43,7 @@ class NN(nn.Module):
     def forward(self, input):
         out = func.relu(self.lay1(input))
         out = func.relu(self.lay2(out))
-        out = func.sigmoid(self.lay3(out))
+        out = func.relu(self.lay3(out))
         return out
     
 model = NN()

@@ -11,6 +11,7 @@ from qval.qactivations import qRelu, qSigmoid
 from qval.qlayer import qdense
 from qval.qval import qval
 
+
 class NN(nn.Module):
     def __init__(self):
         super(NN, self).__init__()
@@ -21,15 +22,12 @@ class NN(nn.Module):
     def forward(self, input):
         out = func.relu(self.lay1(input))
         out = func.relu(self.lay2(out))
-        out = func.sigmoid(self.lay3(out))
+        out = func.relu(self.lay3(out))
         return out
 
 
 loaded_model = NN()
 loaded_model.load_state_dict(torch.load('xor_model.pth', weights_only=True))
-
-for name, param in loaded_model.named_parameters():
-    print(f"{name}: {param.data}")
 
 test_inputs = torch.tensor([[0, 0], [0, 1], [1, 0], [1, 1]], dtype=torch.float32)
 with torch.no_grad():
@@ -39,8 +37,6 @@ print("Model outputs:", outputs)
 
 def convert_to_qdense_params(layer):
     input_weights = layer.weight.detach().numpy().tolist()
-    print("input weights: ")
-    print(np.shape(input_weights))
     output_bias = layer.bias.detach().numpy().tolist()
     return input_weights, output_bias
 
@@ -54,10 +50,7 @@ input_weights, output_bias = convert_to_qdense_params(loaded_model.lay3)
 qdense3 = qdense(input_weights, output_bias, input_bits=4, output_bits=4)
 
 def dense_process(input):
-    print("LEN INPUT")
     input = input.numpy().tolist()
-    print(len(input))
-    print(type(input))
 
     out = qdense1.process(input)     
     print(np.shape(out))
@@ -75,7 +68,7 @@ def dense_process(input):
     out = qdense3.process(out)
     print(f"Output of qdense3(before activation): {qval.dequantize(out[0])}")  
     for i in range(len(out)):
-        out[i] = qSigmoid(out[i])
+        out[i] = qRelu(out[i])
     print(f"Output of qdense3: {qval.dequantize(out[0])}")
 
     return out
