@@ -1,7 +1,5 @@
 from typing import Callable
 
-import numpy as np
-
 from . import qfunctions as qf
 from . import qval
 
@@ -11,7 +9,7 @@ class qdense():
                  input_bits: int = 8, output_bits: int = 8):
 
         self.input_len = len(input_values[0])
-        self.output_len = len(input_values)
+        self.output_len = len(output_values)
         self.input_bits = input_bits
         self.output_bits = output_bits
         self.input_params = []
@@ -24,6 +22,7 @@ class qdense():
             self.input_params = [[qval(x, input_bits)
                                   for x in values] for values in input_values]
             self.output_params = [qval(x, output_bits) for x in output_values]
+            print(f"INPUT PARAMS: {self.input_params}")
 
         elif isinstance(input_values[0][0], qval):
             self.input_params = input_values
@@ -32,6 +31,7 @@ class qdense():
         # elif isinstance(input_values[0], str):
         #     if not all(char in '01' for char in value):
         #     raise ValueError("BinaryString can only contain '0' and '1'")
+
 
         else:
             raise ValueError("Unsuported type for qval.")
@@ -63,7 +63,7 @@ class qdense():
 
     def __repr__(self):
         input_layer = f"Input layers: q{self.input_bits}\n"
-        for i in range(self.output_len):
+        for i in range(self.input_len):
             input_layer += f"{i} {[x.val() for x in self.input_params[i]]}\n"
 
         output_layer = f"Output layers: q{self.output_bits} { \

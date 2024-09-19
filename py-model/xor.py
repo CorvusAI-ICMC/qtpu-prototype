@@ -1,11 +1,11 @@
-import torch
 import matplotlib.pyplot as plt
-from torch.utils.data import DataLoader, TensorDataset, random_split
-import torch.nn.functional as func
-import torch.nn as nn
-from torch import optim
 import numpy as np
 import pandas as pd
+import torch
+import torch.nn as nn
+import torch.nn.functional as func
+from torch import optim
+from torch.utils.data import DataLoader, TensorDataset, random_split
 
 datasetSize = 1000
 dataset = np.random.rand(datasetSize, 2)
@@ -43,13 +43,13 @@ class NN(nn.Module):
     def forward(self, input):
         out = func.tanh(self.lay1(input))
         out = func.tanh(self.lay2(out))
-        out = self.lay3(out)
+        out = func.sigmoid(self.lay3(out))
         return out
     
 model = NN()
 
 optimizer = optim.Adam(model.parameters(), lr=0.001)
-criterion = nn.BCEWithLogitsLoss()
+criterion = nn.BCELoss()
 
 numEpochs = 200
 
