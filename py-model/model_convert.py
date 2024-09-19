@@ -6,15 +6,15 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as func
 
-# Adjust the path to include your custom qdense implementation
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'py_utils')))
 from qval.qactivations import qSigmoid, qTanh
 from qval.qlayer import \
-    qdense  # Ensure this path is correct for your project structure
+    qdense  
 from qval.qval import qval
 
 
-# Define the neural network architecture
+
 class NN(nn.Module):
     def __init__(self):
         super(NN, self).__init__()
@@ -28,7 +28,7 @@ class NN(nn.Module):
         out = func.sigmoid(self.lay3(out))
         return out
 
-# Load the pre-trained model with weights_only=True for security
+
 loaded_model = NN()
 loaded_model.load_state_dict(torch.load('xor_model.pth', weights_only=True))
 
@@ -41,7 +41,7 @@ with torch.no_grad():
 print("XOR inputs:", test_inputs)
 print("Model outputs:", outputs)
 
-# Function to convert PyTorch layer parameters to qdense format
+
 def convert_to_qdense_params(layer):
     input_weights = layer.weight.detach().numpy().tolist()
     print("input weights: ")
@@ -49,7 +49,7 @@ def convert_to_qdense_params(layer):
     output_bias = layer.bias.detach().numpy().tolist()
     return input_weights, output_bias
 
-# Convert model parameters for qdense layers
+
 input_weights, output_bias = convert_to_qdense_params(loaded_model.lay1)
 qdense1 = qdense(input_weights, output_bias, input_bits=8, output_bits=8)
 # print(len(input_weights[0]))
@@ -60,7 +60,7 @@ qdense2 = qdense(input_weights, output_bias, input_bits=8, output_bits=8)
 input_weights, output_bias = convert_to_qdense_params(loaded_model.lay3)
 qdense3 = qdense(input_weights, output_bias, input_bits=8, output_bits=8)
 
-# Function to process inputs through the qdense layers
+
 def dense_process(input):
     print("LEN INPUT")
     input = input.numpy().tolist()
