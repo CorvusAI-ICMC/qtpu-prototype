@@ -22,7 +22,6 @@ class qdense():
             self.input_params = [[qval(x, input_bits)
                                   for x in values] for values in input_values]
             self.output_params = [qval(x, output_bits) for x in output_values]
-            print(f"INPUT PARAMS: {self.input_params}")
 
         elif isinstance(input_values[0][0], qval):
             self.input_params = input_values
@@ -31,7 +30,6 @@ class qdense():
         # elif isinstance(input_values[0], str):
         #     if not all(char in '01' for char in value):
         #     raise ValueError("BinaryString can only contain '0' and '1'")
-
 
         else:
             raise ValueError("Unsuported type for qval.")
