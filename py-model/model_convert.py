@@ -6,7 +6,7 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as func
 
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'py_utils')))
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', 'py-utils')))
 from qval.qactivations import qRelu, qSigmoid
 from qval.qlayer import qdense
 from qval.qval import qval
