@@ -1,4 +1,5 @@
 from typing import Callable
+
 from . import qfunctions as qf
 from . import qval
 
@@ -7,7 +8,7 @@ class qdense():
     def __init__(self, input_values: list[list], output_values: list,
                  input_bits: int = 8, output_bits: int = 8):
 
-        self.input_len = len(input_values)
+        self.input_len = len(input_values[0])
         self.output_len = len(output_values)
         self.input_bits = input_bits
         self.output_bits = output_bits
