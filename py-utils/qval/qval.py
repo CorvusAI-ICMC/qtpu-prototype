@@ -1,21 +1,20 @@
 from typing import Callable
 from . import qfunctions as qf
 
-
 class qval(str):
-    def __new__(self, value, n: int = 8, scale: float = 1.0):        
+    def __new__(self, value, n: int = 8, scale: float = 1.0):
         self.scale = scale
+
         if isinstance(value, float):
-
-            if abs(value / scale) > 1.0:
-                self.scale = value
-                value /= scale
-                # print("Oh boy")
+            value_range = pow(2, n) - 2
             
-            else:
-                self.scale = scale
+            while abs(value) / self.scale > value_range / 2:
+                self.scale *= 2
+            
+            if self.scale > 1.0:
+                print(f"Redefining scale: {self.scale}")
 
-            # print("!!!", self.scale)
+            value /= self.scale
 
             return str.__new__(self, qf.quantize(value, n, self.scale))
 
@@ -32,7 +31,7 @@ class qval(str):
         return str.__new__(self, value)
 
     @staticmethod
-    def quantize(x: float,  n: int = 4, scale: float = 1.0) -> str:
+    def quantize(x: float,  n: int = 4, scale: int = 1.0) -> str:
         return qf.quantize(x, n, scale)
 
     @staticmethod
@@ -58,4 +57,4 @@ class qval(str):
         return qval(qf.qMul(self, other), len(self), self.scale)
 
     def __repr__(self):
-        return f"qval(q='{self}', n={len(self)}, d='{int(self, 2)}', i='{qf.qToInt(self)}')"
+        return f"qval(bits='{self}', size={len(self)}, decimal='{qf.qToInt(self)}', scale={self.scale})"
